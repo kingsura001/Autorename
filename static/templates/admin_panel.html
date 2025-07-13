@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - File Rename Bot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin: 0;
+        }
+        
+        .stat-change {
+            font-size: 0.75rem;
+            margin-top: 8px;
+        }
+        
+        .stat-change.positive {
+            color: #28a745;
+        }
+        
+        .stat-change.negative {
+            color: #dc3545;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .action-btn {
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .search-box {
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #495057;
+            background-color: transparent;
+            border-bottom: 2px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar px-0">
+                <div class="p-3">
+                    <h4 class="mb-4">
+                        <i class="fas fa-robot me-2"></i>
+                        Bot Admin
+                    </h4>
+                    
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#dashboard" data-section="dashboard">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Dashboard
+                        </a>
+                        <a class="nav-link" href="#users" data-section="users">
+                            <i class="fas fa-users me-2"></i>
+                            Users
+                        </a>
+                        <a class="nav-link" href="#files" data-section="files">
+                            <i class="fas fa-file-alt me-2"></i>
+                            Files
+                        </a>
+                        <a class="nav-link" href="#channels" data-section="channels">
+                            <i class="fas fa-tv me-2"></i>
+                            Channels
+                        </a>
+                        <a class="nav-link" href="#broadcast" data-section="broadcast">
+                            <i class="fas fa-bullhorn me-2"></i>
+                            Broadcast
+                        </a>
+                        <a class="nav-link" href="#settings" data-section="settings">
+                            <i class="fas fa-cog me-2"></i>
+                            Settings
+                        </a>
+                    </nav>
+                </div>
+                
+                <div class="p-3 mt-auto">
+                    <div class="text-center">
+                        <small class="text-light">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Admin Panel v1.0
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Dashboard
+                        </h2>
+                        <div class="header-actions">
+                            <button class="btn btn-outline-primary action-btn" onclick="refreshStats()">
+                                <i class="fas fa-sync-alt me-1"></i>
+                                Refresh
+                            </button>
+                            <button class="btn btn-primary action-btn" onclick="exportData()">
+                                <i class="fas fa-download me-1"></i>
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background-color: #e3f2fd; color: #1976d2;">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <h3 class="stat-value" id="total-users">0</h3>
+                                <p class="stat-label">Total Users</p>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    +12% from last week
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background-color: #f3e5f5; color: #7b1fa2;">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <h3 class="stat-value" id="total-files">0</h3>
+                                <p class="stat-label">Files Processed</p>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    +8% from last week
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background-color: #e8f5e8; color: #388e3c;">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <h3 class="stat-value" id="premium-users">0</h3>
+                                <p class="stat-label">Premium Users</p>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    +15% from last week
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background-color: #fff3e0; color: #f57c00;">
+                                    <i class="fas fa-activity"></i>
+                                </div>
+                                <h3 class="stat-value" id="active-today">0</h3>
+                                <p class="stat-label">Active Today</p>
+                                <div class="stat-change negative">
+                                    <i class="fas fa-arrow-down"></i>
+                                    -3% from yesterday
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Row -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="chart-container">
+                                <h5 class="mb-3">User Activity</h5>
+                                <canvas id="activityChart" height="300"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="chart-container">
+                                <h5 class="mb-3">File Types</h5>
+                                <canvas id="fileTypesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="table-container">
+                        <h5 class="mb-3">Recent Activity</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Action</th>
+                                        <th>File</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-activity">
+                                    <!-- Activity rows will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Users Section -->
+                <div id="users" class="section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>
+                            <i class="fas fa-users me-2"></i>
+                            User Management
+                        </h2>
+                        <div class="header-actions">
+                            <input type="text" class="search-box" placeholder="Search users..." id="user-search">
+                            <button class="btn btn-outline-primary action-btn" onclick="exportUsers()">
+                                <i class="fas fa-download me-1"></i>
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <ul class="nav nav-tabs mb-3">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#all-users" data-bs-toggle="tab">All Users</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#premium-users" data-bs-toggle="tab">Premium</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#banned-users" data-bs-toggle="tab">Banned</a>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="all-users">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>User ID</th>
+                                                <th>Name</th>
+                                                <th>Username</th>
+                                                <th>Join Date</th>
+                                                <th>Status</th>
+                                                <th>Files</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="users-table">
+                                            <!-- Users will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-pane fade" id="premium-users">
+                                <p class="text-muted">Premium users list will appear here...</p>
+                            </div>
+                            
+                            <div class="tab-pane fade" id="banned-users">
+                                <p class="text-muted">Banned users list will appear here...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Files Section -->
+                <div id="files" class="section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>
+                            <i class="fas fa-file-alt me-2"></i>
+                            File Management
+                        </h2>
+                        <div class="header-actions">
+                            <select class="form-select" style="width: auto;" id="file-type-filter">
+                                <option value="">All Types</option>
+                                <option value="video">Video</option>
+                                <option value="audio">Audio</option>
+                                <option value="document">Document</option>
+                            </select>
+                            <button class="btn btn-outline-danger action-btn" onclick="cleanupFiles()">
+                                <i class="fas fa-trash me-1"></i>
+                                Cleanup
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>File ID</th>
+                                        <th>Original Name</th>
+                                        <th>Renamed To</th>
+                                        <th>User</th>
+                                        <th>Size</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="files-table">
+                                    <!-- Files will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Channels Section -->
+                <div id="channels" class="section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>
+                            <i class="fas fa-tv me-2"></i>
+                            Force Subscription Channels
+                        </h2>
+                        <div class="header-actions">
+                            <button class="btn btn-primary action-btn" onclick="addChannel()">
+                                <i class="fas fa-plus me-1"></i>
+                                Add Channel
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Channel ID</th>
+                                        <th>Name</th>
+                                        <th>Username</th>
+                                        <th>Status</th>
+                                        <th>Added Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="channels-table">
+                                    <!-- Channels will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Broadcast Section -->
+                <div id="broadcast" class="section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>
+                            <i class="fas fa-bullhorn me-2"></i>
+                            Broadcast Message
+                        </h2>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="table-container">
+                                <h5 class="mb-3">Create Broadcast</h5>
+                                <form id="broadcast-form">
+                                    <div class="mb-3">
+                                        <label class="form-label">Target Audience</label>
+                                        <select class="form-select" id="broadcast-target">
+                                            <option value="all">All Users</option>
+                                            <option value="premium">Premium Users</option>
+                                            <option value="active">Active Users (7 days)</option>
+                                            <option value="test">Test (Admins only)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Message</label>
+                                        <textarea class="form-control" id="broadcast-message" rows="6" placeholder="Enter your broadcast message..."></textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="broadcast-markdown">
+                                            <label class="form-check-label" for="broadcast-markdown">
+                                                Use Markdown formatting
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-primary" onclick="previewBroadcast()">
+                                            <i class="fas fa-eye me-1"></i>
+                                            Preview
+                                        </button>
+                                        <button type="button" class="btn btn-primary" onclick="sendBroadcast()">
+                                            <i class="fas fa-paper-plane me-1"></i>
+                                            Send Broadcast
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="table-container">
+                                <h5 class="mb-3">Broadcast History</h5>
+                                <div id="broadcast-history">
+                                    <!-- Broadcast history will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Settings Section -->
+                <div id="settings" class="section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>
+                            <i class="fas fa-cog me-2"></i>
+                            Bot Settings
+                        </h2>
+                        <div class="header-actions">
+                            <button class="btn btn-outline-warning action-btn" onclick="resetSettings()">
+                                <i class="fas fa-undo me-1"></i>
+                                Reset
+                            </button>
+                            <button class="btn btn-primary action-btn" onclick="saveSettings()">
+                                <i class="fas fa-save me-1"></i>
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="table-container">
+                                <h5 class="mb-3">General Settings</h5>
+                                <form id="settings-form">
+                                    <div class="mb-3">
+                                        <label class="form-label">Bot Name</label>
+                                        <input type="text" class="form-control" id="bot-name" value="File Rename Bot">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Max File Size (GB)</label>
+                                        <input type="number" class="form-control" id="max-file-size" value="5" min="1" max="20">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Rate Limit (messages/minute)</label>
+                                        <input type="number" class="form-control" id="rate-limit" value="10" min="1" max="100">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="premium-enabled" checked>
+                                            <label class="form-check-label" for="premium-enabled">
+                                                Enable Premium Features
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="force-subscription" checked>
+                                            <label class="form-check-label" for="force-subscription">
+                                                Force Channel Subscription
+                                            </label>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="table-container">
+                                <h5 class="mb-3">Advanced Settings</h5>
+                                <form id="advanced-settings-form">
+                                    <div class="mb-3">
+                                        <label class="form-label">Log Level</label>
+                                        <select class="form-select" id="log-level">
+                                            <option value="DEBUG">Debug</option>
+                                            <option value="INFO" selected>Info</option>
+                                            <option value="WARNING">Warning</option>
+                                            <option value="ERROR">Error</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Database Cleanup (days)</label>
+                                        <input type="number" class="form-control" id="cleanup-days" value="30" min="1" max="365">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Backup Frequency</label>
+                                        <select class="form-select" id="backup-frequency">
+                                            <option value="daily">Daily</option>
+                                            <option value="weekly" selected>Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="auto-backup" checked>
+                                            <label class="form-check-label" for="auto-backup">
+                                                Enable Auto Backup
+                                            </label>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Global variables
+        let activityChart, fileTypesChart;
+        
+        // Initialize the admin panel
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadDashboardData();
+            setupEventListeners();
+        });
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-link[data-section]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                    
+                    // Update active nav link
+                    document.querySelectorAll('.nav-link').forEach(nl => nl.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Search functionality
+            document.getElementById('user-search').addEventListener('input', function() {
+                filterUsers(this.value);
+            });
+            
+            // File type filter
+            document.getElementById('file-type-filter').addEventListener('change', function() {
+                filterFiles(this.value);
+            });
+        }
+        
+        // Show specific section
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+            
+            // Load section specific data
+            switch(sectionId) {
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'files':
+                    loadFiles();
+                    break;
+                case 'channels':
+                    loadChannels();
+                    break;
+                case 'broadcast':
+                    loadBroadcastHistory();
+                    break;
+            }
+        }
+        
+        // Initialize charts
+        function initializeCharts() {
+            // Activity Chart
+            const activityCtx = document.getElementById('activityChart').getContext('2d');
+            activityChart = new Chart(activityCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Active Users',
+                        data: [65, 59, 80, 81, 56, 55, 40],
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Files Processed',
+                        data: [28, 48, 40, 19, 86, 27, 90],
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // File Types Chart
+            const fileTypesCtx = document.getElementById('fileTypesChart').getContext('2d');
+            fileTypesChart = new Chart(fileTypesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Video', 'Audio', 'Document', 'Other'],
+                    datasets: [{
+                        data: [45, 25, 20, 10],
+                        backgroundColor: [
+                            '#007bff',
+                            '#28a745',
+                            '#ffc107',
+                            '#6c757d'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Load dashboard data
+        function loadDashboardData() {
+            // Simulate loading stats
+            document.getElementById('total-users').textContent = '1,234';
+            document.getElementById('total-files').textContent = '5,678';
+            document.getElementById('premium-users').textContent = '89';
+            document.getElementById('active-today').textContent = '234';
+            
+            // Load recent activity
+            loadRecentActivity();
+        }
+        
+        // Load recent activity
+        function loadRecentActivity() {
+            const tbody = document.getElementById('recent-activity');
+            const activities = [
+                { user: 'John Doe', action: 'File Rename', file: 'movie.mp4', time: '2 min ago', status: 'success' },
+                { user: 'Jane Smith', action: 'Upload', file: 'document.pdf', time: '5 min ago', status: 'pending' },
+                { user: 'Bob Johnson', action: 'Thumbnail', file: 'series.mkv', time: '8 min ago', status: 'success' },
+                { user: 'Alice Brown', action: 'Premium', file: '-', time: '12 min ago', status: 'success' },
+                { user: 'Charlie Wilson', action: 'File Rename', file: 'audio.mp3', time: '15 min ago', status: 'failed' }
+            ];
+            
+            tbody.innerHTML = activities.map(activity => `
+                <tr>
+                    <td>${activity.user}</td>
+                    <td>${activity.action}</td>
+                    <td>${activity.file}</td>
+                    <td>${activity.time}</td>
+                    <td>
+                        <span class="status-badge ${activity.status === 'success' ? 'status-active' : 
+                                                   activity.status === 'pending' ? 'status-pending' : 'status-inactive'}">
+                            ${activity.status}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Load users
+        function loadUsers() {
+            const tbody = document.getElementById('users-table');
+            const users = [
+                { id: 12345, name: 'John Doe', username: '@johndoe', joinDate: '2024-01-15', status: 'active', files: 25 },
+                { id: 12346, name: 'Jane Smith', username: '@janesmith', joinDate: '2024-01-20', status: 'premium', files: 45 },
+                { id: 12347, name: 'Bob Johnson', username: '@bobjohnson', joinDate: '2024-02-01', status: 'active', files: 12 },
+                { id: 12348, name: 'Alice Brown', username: '@alicebrown', joinDate: '2024-02-05', status: 'banned', files: 8 }
+            ];
+            
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.username}</td>
+                    <td>${user.joinDate}</td>
+                    <td>
+                        <span class="status-badge ${user.status === 'active' ? 'status-active' : 
+                                                   user.status === 'premium' ? 'status-active' : 'status-inactive'}">
+                            ${user.status}
+                        </span>
+                    </td>
+                    <td>${user.files}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewUser(${user.id})">View</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="banUser(${user.id})">Ban</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Load files
+        function loadFiles() {
+            const tbody = document.getElementById('files-table');
+            const files = [
+                { id: 'f001', original: 'movie.2024.1080p.mkv', renamed: 'Movie - 2024 [1080p]', user: 'John Doe', size: '2.5 GB', type: 'video', date: '2024-07-13', status: 'completed' },
+                { id: 'f002', original: 'song.mp3', renamed: 'Song - Artist', user: 'Jane Smith', size: '5.2 MB', type: 'audio', date: '2024-07-13', status: 'processing' },
+                { id: 'f003', original: 'document.pdf', renamed: 'Document - Final', user: 'Bob Johnson', size: '1.8 MB', type: 'document', date: '2024-07-12', status: 'completed' }
+            ];
+            
+            tbody.innerHTML = files.map(file => `
+                <tr>
+                    <td>${file.id}</td>
+                    <td>${file.original}</td>
+                    <td>${file.renamed}</td>
+                    <td>${file.user}</td>
+                    <td>${file.size}</td>
+                    <td>${file.type}</td>
+                    <td>${file.date}</td>
+                    <td>
+                        <span class="status-badge ${file.status === 'completed' ? 'status-active' : 
+                                                   file.status === 'processing' ? 'status-pending' : 'status-inactive'}">
+                            ${file.status}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewFile('${file.id}')">View</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteFile('${file.id}')">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Load channels
+        function loadChannels() {
+            const tbody = document.getElementById('channels-table');
+            const channels = [
+                { id: '@channel1', name: 'Main Channel', username: '@mainchannel', status: 'active', date: '2024-01-01' },
+                { id: '-1001234567890', name: 'Support Group', username: '', status: 'active', date: '2024-01-15' },
+                { id: '@updates', name: 'Updates Channel', username: '@updates', status: 'inactive', date: '2024-02-01' }
+            ];
+            
+            tbody.innerHTML = channels.map(channel => `
+                <tr>
+                    <td>${channel.id}</td>
+                    <td>${channel.name}</td>
+                    <td>${channel.username || 'Private'}</td>
+                    <td>
+                        <span class="status-badge ${channel.status === 'active' ? 'status-active' : 'status-inactive'}">
+                            ${channel.status}
+                        </span>
+                    </td>
+                    <td>${channel.date}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="editChannel('${channel.id}')">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeChannel('${channel.id}')">Remove</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Load broadcast history
+        function loadBroadcastHistory() {
+            const container = document.getElementById('broadcast-history');
+            const history = [
+                { message: 'New features available!', target: 'all', sent: '2024-07-12', status: 'sent' },
+                { message: 'Premium discount offer', target: 'premium', sent: '2024-07-10', status: 'sent' },
+                { message: 'Maintenance notice', target: 'all', sent: '2024-07-08', status: 'sent' }
+            ];
+            
+            container.innerHTML = history.map(item => `
+                <div class="border-bottom pb-2 mb-2">
+                    <div class="fw-bold">${item.message.substring(0, 30)}...</div>
+                    <small class="text-muted">
+                        Target: ${item.target} | ${item.sent}
+                        <span class="status-badge status-active ms-2">${item.status}</span>
+                    </small>
+                </div>
+            `).join('');
+        }
+        
+        // Action functions
+        function refreshStats() {
+            showAlert('Statistics refreshed!', 'success');
+            loadDashboardData();
+        }
+        
+        function exportData() {
+            showAlert('Data export started!', 'info');
+        }
+        
+        function exportUsers() {
+            showAlert('Users exported!', 'success');
+        }
+        
+        function cleanupFiles() {
+            if (confirm('Are you sure you want to cleanup old files?')) {
+                showAlert('File cleanup completed!', 'success');
+            }
+        }
+        
+        function addChannel() {
+            const channelId = prompt('Enter channel ID:');
+            const channelName = prompt('Enter channel name:');
+            
+            if (channelId && channelName) {
+                showAlert('Channel added successfully!', 'success');
+                loadChannels();
+            }
+        }
+        
+        function previewBroadcast() {
+            const message = document.getElementById('broadcast-message').value;
+            const target = document.getElementById('broadcast-target').value;
+            
+            if (!message) {
+                showAlert('Please enter a message!', 'error');
+                return;
+            }
+            
+            showAlert(`Preview: Message will be sent to ${target} users`, 'info');
+        }
+        
+        function sendBroadcast() {
+            const message = document.getElementById('broadcast-message').value;
+            const target = document.getElementById('broadcast-target').value;
+            
+            if (!message) {
+                showAlert('Please enter a message!', 'error');
+                return;
+            }
+            
+            if (confirm(`Send broadcast to ${target} users?`)) {
+                showAlert('Broadcast sent successfully!', 'success');
+                document.getElementById('broadcast-message').value = '';
+                loadBroadcastHistory();
+            }
+        }
+        
+        function saveSettings() {
+            showAlert('Settings saved successfully!', 'success');
+        }
+        
+        function resetSettings() {
+            if (confirm('Reset all settings to default?')) {
+                showAlert('Settings reset to default!', 'warning');
+            }
+        }
+        
+        // User actions
+        function viewUser(userId) {
+            showAlert(`Viewing user ${userId}`, 'info');
+        }
+        
+        function banUser(userId) {
+            if (confirm(`Ban user ${userId}?`)) {
+                showAlert(`User ${userId} banned!`, 'warning');
+                loadUsers();
+            }
+        }
+        
+        // File actions
+        function viewFile(fileId) {
+            showAlert(`Viewing file ${fileId}`, 'info');
+        }
+        
+        function deleteFile(fileId) {
+            if (confirm(`Delete file ${fileId}?`)) {
+                showAlert(`File ${fileId} deleted!`, 'warning');
+                loadFiles();
+            }
+        }
+        
+        // Channel actions
+        function editChannel(channelId) {
+            showAlert(`Editing channel ${channelId}`, 'info');
+        }
+        
+        function removeChannel(channelId) {
+            if (confirm(`Remove channel ${channelId}?`)) {
+                showAlert(`Channel ${channelId} removed!`, 'warning');
+                loadChannels();
+            }
+        }
+        
+        // Filter functions
+        function filterUsers(query) {
+            // Implementation for user filtering
+            console.log('Filtering users:', query);
+        }
+        
+        function filterFiles(type) {
+            // Implementation for file filtering
+            console.log('Filtering files by type:', type);
+        }
+        
+        // Utility functions
+        function showAlert(message, type) {
+            const alertTypes = {
+                'success': 'alert-success',
+                'error': 'alert-danger',
+                'warning': 'alert-warning',
+                'info': 'alert-info'
+            };
+            
+            const alert = document.createElement('div');
+            alert.className = `alert ${alertTypes[type]} alert-dismissible fade show position-fixed`;
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
