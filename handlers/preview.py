@@ -1,8 +1,10 @@
+
 """
 Preview functionality for file renaming
 """
 
 import logging
+from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
@@ -424,7 +426,7 @@ async def handle_preview_filename_input(update: Update, context: ContextTypes.DE
         logger.error(f"Error handling preview filename input: {e}")
         await update.message.reply_text("❌ Error processing filename preview.")
 
-def generate_preview_report(filenames: list, settings) -> str:
+async def generate_preview_report(filenames: list, settings) -> str:
     """Generate a detailed preview report"""
     try:
         report = "📊 **Rename Preview Report**\n\n"
